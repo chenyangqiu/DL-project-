@@ -17,7 +17,7 @@ torch.cuda.manual_seed_all(seed)
 np.random.seed(seed)  # Numpy module.
 random.seed(seed)  # Python random module.
 torch.manual_seed(seed)
-torch.backends.cudnn.benchmark = False
+torch.backends.cudnn.benchmark = True
 torch.backends.cudnn.deterministic = True
 
 
@@ -87,22 +87,25 @@ if __name__ == '__main__':
     num_of_nodes = 50
     num_of_edges = 200
     dim = 10
-
+    # 50个data
     num_of_train = 50
     num_of_test = 5
 
-    # fixed_function = generate_function(num_of_nodes, dim)
-    # train_set = generate_dataset(num_of_train, num_of_nodes,
-    #                              num_of_edges, directed=False, dim=dim, fix_func=fixed_function)
-    # test_set = generate_dataset(num_of_test, num_of_nodes, num_of_edges,
-    #                             directed=False, dim=dim, fix_func=fixed_function)
-    # test_set = star_graph(num_of_nodes, fix_func=fixed_function)
+    # 调用dataset.py中的generate_function(num_of_nodes, dim),生成固定的优化函数.
+    fixed_function = generate_function(num_of_nodes, dim)
 
-    fixed_function,dim = load_function(num_of_nodes)
-    train_set = load_dataset(num_of_train, num_of_nodes,
-                                 num_of_edges, directed=False, fix_func=fixed_function)
-    test_set = load_dataset(num_of_test, num_of_nodes, num_of_edges,
-                                directed=False, fix_func=fixed_function)
+    train_set = generate_dataset(num_of_train, num_of_nodes,
+                                 num_of_edges, directed=False, dim=dim, fix_func=fixed_function)
+    test_set = generate_dataset(num_of_test, num_of_nodes, num_of_edges,
+                                directed=False, dim=dim, fix_func=fixed_function)
+    # test_set = star_graph(num_of_nodes, fix_func=fixed_function)
+    # print(train_set.__dict__)# 打印属性方法对象名
+
+    # fixed_function,dim = load_function(num_of_nodes)
+    # train_set = load_dataset(num_of_train, num_of_nodes,
+    #                              num_of_edges, directed=False, fix_func=fixed_function)
+    # test_set = load_dataset(num_of_test, num_of_nodes, num_of_edges,
+    #                             directed=False, fix_func=fixed_function)
 
     # init model
     model_GD = Net_GD(dim=dim, step_size=0.001).to(device)
@@ -148,3 +151,4 @@ if __name__ == '__main__':
     plt.yscale('log')
     plt.legend()
     plt.savefig('test err')
+    plt.show()

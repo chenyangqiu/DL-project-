@@ -14,9 +14,12 @@ def problem_parameter(min_eig,num_of_nodes,dim):
     sum_b = np.zeros(dim)
     sum_A = np.zeros((dim,dim))
     for i in range(num_of_nodes):
+        #QR分解
         Q,_ = np.linalg.qr(np.random.rand(dim,dim))
         diag_elem = np.random.rand(dim)+min_eig
         A[i] = Q.T@np.diag(diag_elem)@Q
+
         sum_A += A[i]
         sum_b += b[i]
+
     return A,b, sum_A,sum_b
