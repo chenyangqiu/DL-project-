@@ -16,7 +16,8 @@ class Net_GD(torch.nn.Module):
         x = deepcopy(data.x)
         z = deepcopy(data.x)
         u = deepcopy(data.x)
-        v = torch.ones((data.num_nodes, 1)).to(u.device)
+        # v = torch.ones((data.num_nodes, 1)).to(u.device)
+        z_last = deepcopy(data.x)
         # func_v = func_value(data.A, data.b, x)
         if recording:
             record = []
@@ -26,15 +27,13 @@ class Net_GD(torch.nn.Module):
         for i in range(num_layers):
             alpha = self.step_size/((i+1)**(0.5))
             # func_v = func_value(data.A, data.b, z)
-            u = self.conv(x, data.edge_index,
-                          first_iter=(i == 0), threshold=threshold)
-            comm_cost += self.conv.comm_cost
-            v = self.conv(v, data.edge_index, first_iter=False,
-                          threshold=threshold)
-            inv_v = v**(-1)
-            z = torch.mul(inv_v, u)
-            x = u - alpha*grad(data.A, data.b, z)
-
+            u, theta = self.conv(x, data.edge_index,
+                          first_iter=(i == 0), threshold=threshold) # 聚合后的每个节点的状态
+            comm_cost += self.conv.comm_cost  #通信量，暂时没用
+            # x_last = x
+            z_last = z
+            z = u
+            x = u - alpha*grad(data.A, data.b, z)+ theta*(z_last - z)
             #y = grad(data.A, data.b,x)
             # u = self.conv(u-alpha*y, func_v, data.edge_index,
             #              first_iter=(i == 0))
@@ -45,13 +44,17 @@ class Net_GD(torch.nn.Module):
             if (terminal > 0):
                 err = opt.opt_distance(data.y.cpu().numpy(),
                                        z.cpu().detach().numpy())
+                # err = opt.opt_distance(data.y.cpu().numpy(),
+                #                        x.cpu().detach().numpy())
                 if err < terminal:
                     break
             if recording:
                 err = opt.opt_distance(data.y.cpu().numpy(),
                                        z.cpu().detach().numpy())
+                # err = opt.opt_distance(data.y.cpu().numpy(),
+                #                        x.cpu().detach().numpy())
                 record.append(err)
-        return (z, comm_cost, record) if recording else (z, comm_cost)
+        return (x, comm_cost, record) if recording else (x, comm_cost)
 
 
 class Net_EXTRA(torch.nn.Module):
