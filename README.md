@@ -1,6 +1,5 @@
 # DOP-GNN
 
-Implementation of 2020 Fall CS280 final project 
 "DOP-GNN: Communication-Efficient Frameworks for Distributed Optimization with Graph Neural Network"
 
 ## Overview
